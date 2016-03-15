@@ -4,7 +4,7 @@ Vivarium is an implementation of python, written in python. It is designed to re
 
 ## Installation
 
-	git clone this_repo
+	git clone https://github.com/DXsmiley/vivarium.git
 
 ## Shell
 

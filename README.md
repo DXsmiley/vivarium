@@ -16,7 +16,7 @@ The vivarium shell is very similar to the default python one, but will fewer fea
 
 	import vivarium
 	untrusted_code = input('Enter the code: ')
-	output = vivarium.easy.run(untristed_code)
+	output = vivarium.easy.run(untrusted_code)
 	print(output)
 
 The `vivarium.easy` module contains some helper functions to effortlessly execute code.

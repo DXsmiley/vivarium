@@ -1,6 +1,6 @@
 # Vivarium
 
-Vivarium is an implementation of python, written in python. It is designed to restrict the environment of any executed code.
+Vivarium is an implementation of [Python](http://python.org/), written in Python. It is designed to restrict the environment of executed code.
 
 ## Installation
 
@@ -8,7 +8,7 @@ Vivarium is an implementation of python, written in python. It is designed to re
 
 ## Shell
 
-The vivarium shell is very similar to the default python one, but will fewer features.
+The vivarium shell is very similar to the default Python one, but with fewer features.
 
 	python -m vivarium
 

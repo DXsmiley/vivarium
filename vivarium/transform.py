@@ -1,3 +1,7 @@
+"""Used to convert a string into an executable structure.
+
+Calling `transform("code as a string")` will probably be enough."""
+
 import vivarium.core
 import vivarium.data.string
 import vivarium.data.numeric

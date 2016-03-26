@@ -1,19 +1,32 @@
+"""Classes representing Python's syntactic structure.
+
+Most of these implemnt the `evaluate` method."""
+
 import operator
 import vivarium.data
 import vivarium.signal
 
 def unwrap(d):
+	"""Retreives the datum object within a Store.
+
+	Returns the input if it's not a Store."""
 	if type(d) is vivarium.data.store.Store:
 		return d.get()
 	return d
 
 class SetStatement:
+	"""Python assignment statement.
+
+	e.g. `x = 7`"""
 
 	def __init__(self, reference, expression):
+		"""reference -- A VariableReference object.
+		expression -- Any object that implements the evaluate function."""
 		self.reference = reference
 		self.expression = expression
 
 	def evaluate(self, scope):
+		"""Perform the assignment in the given scope. Returns nothing."""
 		value = self.expression.evaluate(scope)
 		storage = self.reference.evaluate(scope)
 		# print(storage, '=', value)
@@ -23,24 +36,30 @@ class SetStatement:
 		return 'SET({}, {})'.format(self.reference, self.expression)
 
 class Variable:
+	"""Python variable access.
+
+	e.g. the `y` in `x = y`"""
 
 	def __init__(self, name):
 		self.name = name
 
 	def evaluate(self, scope):
+		"""Returns the value of the value within the scope."""
 		return scope.get(self.name).get()
 
 	def __repr__(self):
 		return self.name
 
-# Structure that returns the place where the variable is stored
-# Used on the left hand side of set (=) operators.
 class VariableReference:
+	"""Python variable reference.
+
+	e.g. the `x` in `x = y`"""
 
 	def __init__(self, name):
 		self.name = name
 
 	def evaluate(self, scope):
+		"""Returns a reference to the value within the scope."""
 		return scope.set(self.name)
 
 	def __repr__(self):
@@ -50,6 +69,7 @@ class Attribute:
 	pass
 
 class Statements:
+	"""List of Python statements."""
 
 	def __init__(self, statements):
 		self.statements = statements
@@ -59,6 +79,9 @@ class Statements:
 		return self
 
 	def evaluate(self, scope):
+		"""Execute the statements.
+
+		Return the output value of the last one."""
 		last_value = None
 		for i in self.statements:
 			last_value = i.evaluate(scope)
@@ -68,6 +91,9 @@ class Statements:
 		return 'STMTS({})'.format(', '.join(str(i) for i in self.statements))
 
 class Constant:
+	"""A constant value.
+
+	e.g. `12`"""
 
 	def __init__(self, value):
 		self.value = value
@@ -101,8 +127,15 @@ class Tuple:
 		return '({},)'.format(', '.join(str(i) for i in self.elements))
 
 class IfBranch:
+	"""An if (and possible else) statement."""
 
 	def __init__(self, condition, if_block, else_block = None):
+		"""Create an if statement.
+
+		Arguments:
+		condition -- The test condition. Should be an Expression.
+		if_block -- Evaluated if the condition is truthy.
+		else_block -- If not None, evaluated if the condition is falsy. Defaults to None."""
 		self.condition = condition
 		self.if_block = if_block
 		self.else_block = else_block
@@ -120,12 +153,23 @@ class IfBranch:
 		return 'IF({}, {})'.format(self.condition, self.if_block)
 
 class FunctionCall:
+	"""A call to a function.
+
+	e.g. `max(1, 2, 3)`"""
 
 	def __init__(self, function_expression, arguments_expression = None):
+		"""Create a function call.
+
+		Arguments:
+		function_expression -- Should evaluate to something that implements the function `call`.
+			This is usually just a VariableReference.
+		arguments_expression -- An ArgumentsList. Can be ommitted if no arguments are passed.
+		"""
 		self.function_expression = function_expression
 		self.arguments_expression = arguments_expression if arguments_expression else ArgumentList()
 
 	def evaluate(self, scope):
+		"""Execute the function are return the `return`ed value."""
 		function = unwrap(self.function_expression.evaluate(scope))
 		arguments = self.arguments_expression.evaluate(scope)
 		return function.call(arguments)
@@ -134,8 +178,17 @@ class FunctionCall:
 		return '{}({})'.format(self.function_expression, self.arguments_expression)
 
 class FunctionDefinition:
+	"""The definition of a function.
+
+	e.g. `def f(a, b): return a + b`"""
 
 	def __init__(self, function_name, argument_names, block):
+		"""Create a function definition.
+
+		Arguments:
+		function_name -- The name of the function, as a string.
+		arguments_names -- The names of the arguments. A list of strings.
+		block -- The statements within the function."""
 		self.function_name = function_name
 		self.argument_names = argument_names
 		self.block = block
@@ -149,6 +202,8 @@ class FunctionDefinition:
 		return 'DEF({}; {}; {})'.format(self.function_name, ', '.join(self.argument_names), self.block)
 
 class ArgumentList:
+	"""A list of arguments to be evaluated. Used to create a FunctionCall."""
+	# The implementation of this is pretty awkward at the moment...
 
 	def __init__(self, first = None):
 		self.args = []
@@ -173,6 +228,7 @@ class ArgumentList:
 		return ', '.join(str(i) for i in self.args)
 
 class Return:
+	"""The `return` statement."""
 
 	def __init__(self, expression):
 		self.expression = expression
@@ -185,8 +241,14 @@ class Return:
 		return 'RETURN({})'.format(self.expression)
 
 class WhileLoop:
+	"""The `while` loop."""
 
 	def __init__(self, condition, block):
+		"""Construct a while loop.
+
+		Arguments:
+		condition -- An Expression. Loop will run as long as this evaluates truthy.
+		block -- The statements within the loop."""
 		self.condition = condition
 		self.block = block
 

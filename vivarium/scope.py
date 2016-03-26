@@ -4,23 +4,36 @@ import vivarium.data.function
 import vivarium.data.datatype
 
 class Scope:
+	"""Stores program state. Includes variables and not much else."""
 
-	def __init__(self, s = None):
+	def __init__(self, superscope = None):
+		"""Create a scope.
+
+		Things not found in this scope are searched for in the superscope.
+		This happens recursively."""
 		self.values = {}
-		self.superscope = s
+		self.superscope = superscope
 
 	def get(self, name):
-		# print(name, self.values, name in self.values)
+		"""Returns the Store containing the variable called `name`.
+
+		Searches in order to obtain the value of the variable."""
 		if name in self.values:
 			return self.values[name]
 		if self.superscope is None:
 			raise Exception('no variable ' + str(name))
 		return self.superscope.get(name)
 
-	# This doesn't actually set the value within the scope,
-	# it returns the datum object so that the parent function
-	# can then fiddle with it
 	def set(self, name, is_first = True):
+		"""Returns the Store containing the variable called `name`.
+
+		Searches in order to set the value of the variable.
+		If the variable doesn't exists within the current scope,
+		or any superscope, it will be created in the current scope.
+
+		Arguments
+		name -- The name of the variable.
+		is_first -- Internal use only."""
 		result = None
 		# If we have the variable, set it
 		if name in self.values:
@@ -35,15 +48,15 @@ class Scope:
 			self.values[name] = result
 		return result
 
-	# Makes all the values contained within the scope read-only
 	def lockdown(self):
+		"""Makes all the values contained within the scope read-only"""
 		for k, v in self.values.items():
 			v.readonly = True
 
-	# Remove a variable, local only.
-	# Usefull when modifying the global scope given by global_scope(), if you don't
-	# want the program to be able to `print` to the console or something.
 	def unset(self, name):
+		"""Remove a variable. Doesn't search superscopes.
+		Usefull when modifying the global scope given by global_scope(), if you don't
+		want the program to be able to `print` to the console or something."""
 		del self.values[name]
 
 	def __repr__(self):
@@ -73,6 +86,10 @@ def min_function(*args):
 	return vivarium.data.numeric.Integer(min(int(i) for i in args))
 
 def global_scope():
+	"""Returns a pre-made 'global' scope containing some basic functions.
+
+	Note that these are writeable, so you might wanted to called `lockdown` on it
+	fore it's passed to the program."""
 	globs = Scope()
 	globs.set('print').set(vivarium.data.function.FunctionBuiltin(print_function))
 	globs.set('input').set(vivarium.data.function.FunctionBuiltin(input_function))
